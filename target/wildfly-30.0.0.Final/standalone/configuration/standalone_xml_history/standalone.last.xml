@@ -518,7 +518,7 @@
     </socket-binding-group>
     <deployments>
         <deployment name="taskProject-1.0-SNAPSHOT.war" runtime-name="taskProject-1.0-SNAPSHOT.war">
-            <content sha1="7f59e82d4127b24fb49adbcb6e50b9961d2ff938"/>
+            <content sha1="6a7dfaaa6213a34a7645d6c06c133ccb0d581cbe"/>
         </deployment>
     </deployments>
 </server>
