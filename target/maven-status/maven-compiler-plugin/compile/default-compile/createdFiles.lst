@@ -1,5 +1,8 @@
 com/touhousoft/taskproject/controller/MainServlet.class
 com/touhousoft/taskproject/service/UserService.class
+com/touhousoft/taskproject/controller/ConexionServlet.class
+com/touhousoft/taskproject/model/DAOUser.class
 com/touhousoft/taskproject/controller/LoginServlet.class
+com/touhousoft/taskproject/model/ConnectionDB.class
 com/touhousoft/taskproject/controller/HelloServlet.class
 com/touhousoft/taskproject/model/usuario.class

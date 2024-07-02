@@ -128,7 +128,8 @@
         <div class="text-start m-4">
           <h2 class="text-3xl font-bold text-gray-500 mb-2"> Mensaje: <%= request.getAttribute("mensaje") != null ? request.getAttribute("mensaje") : "" %></h2>
           <h2 class="text-3xl font-bold text-gray-500 mb-2"> Intentos Permitidos: <%= request.getAttribute("intentos") != null ? request.getAttribute("intentos") : "" %></h2>
-          </div>
+          <h2 class="text-3xl font-bold text-gray-500 mb-2">Mensaje de DB: <%= request.getAttribute("dbmessage") != null ? request.getAttribute("dbmessage") : "" %></h2>
+        </div>
       </main>
     </div>
       

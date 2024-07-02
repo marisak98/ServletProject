@@ -24,10 +24,32 @@
     <url-pattern>/login/*</url-pattern>
     </servlet-mapping>
 
+  <servlet>
+    <servlet-name>ConexionServlet</servlet-name>
+    <servlet-class>com.touhousoft.taskproject.controller.ConexionServlet</servlet-class>
+    </servlet>
+  <servlet-mapping>
+    <servlet-name>ConexionServlet</servlet-name>
+    <url-pattern>/conexion/*</url-pattern>
+    </servlet-mapping>
    <welcome-file-list>
     <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
 
+<context-param>
+    <param-name>jdbcUrl</param-name>
+    <param-value>jdbc:mariadb://localhost:3306/laravel</param-value>
+    </context-param>
+
+  <context-param>
+    <param-name>jdbcUsername</param-name>
+    <param-value>marisak</param-value>
+    </context-param>
+
+  <context-param>
+    <param-name>jdbcPassword</param-name>
+    <param-value>marisaxalice</param-value>
+    </context-param>
 
   <session-config>
     <session-timeout>

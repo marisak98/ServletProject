@@ -1,5 +1,8 @@
 /home/marisak/NetBeansProjects/taskProject/src/main/java/com/touhousoft/taskproject/controller/LoginServlet.java
 /home/marisak/NetBeansProjects/taskProject/src/main/java/com/touhousoft/taskproject/controller/HelloServlet.java
 /home/marisak/NetBeansProjects/taskProject/src/main/java/com/touhousoft/taskproject/controller/MainServlet.java
+/home/marisak/NetBeansProjects/taskProject/src/main/java/com/touhousoft/taskproject/model/ConnectionDB.java
+/home/marisak/NetBeansProjects/taskProject/src/main/java/com/touhousoft/taskproject/controller/ConexionServlet.java
 /home/marisak/NetBeansProjects/taskProject/src/main/java/com/touhousoft/taskproject/model/usuario.java
+/home/marisak/NetBeansProjects/taskProject/src/main/java/com/touhousoft/taskproject/model/DAOUser.java
 /home/marisak/NetBeansProjects/taskProject/src/main/java/com/touhousoft/taskproject/service/UserService.java
