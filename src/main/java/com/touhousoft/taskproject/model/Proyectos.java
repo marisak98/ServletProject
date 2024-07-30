@@ -3,14 +3,14 @@ package com.touhousoft.taskproject.model;
 import java.time.LocalDate;
 
 public class Proyectos {
-  private int id;
+  private Long id;
   private String nombre;
   private String descripcion;
   private LocalDate fechaInicio;
   private LocalDate fechaFin;
   private Estado status;
 
-  public Proyectos(int id, String nombre, String descripcion, LocalDate fechaInicio, LocalDate fechaFin,
+  public Proyectos(Long id, String nombre, String descripcion, LocalDate fechaInicio, LocalDate fechaFin,
       Estado status) {
     this.id = id;
     this.nombre = nombre;
@@ -20,11 +20,11 @@ public class Proyectos {
     this.status = status;
   }
 
-  public int getId() {
+  public Long getId() {
     return id;
   }
 
-  public void setId(int id) {
+  public void setId(Long id) {
     this.id = id;
   }
 

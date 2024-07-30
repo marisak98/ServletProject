@@ -86,7 +86,6 @@ public class ConexionServlet extends HttpServlet {
       throws ServletException, IOException {
     String action = request.getPathInfo();
     Long id = null;
-    int ids = 0;
 
     // Verifica si la ruta es /task/getTarea/ID
     if (action != null && action.matches("/task/getTarea/\\d+")) {
@@ -101,6 +100,12 @@ public class ConexionServlet extends HttpServlet {
     } else if (action != null && action.matches("/member/delete/\\d+")) {
       id = Long.parseLong(action.substring(action.lastIndexOf("/") + 1));
       action = "/member/delete";
+    } else if (action != null && action.matches("/project/getProject/\\d+")) {
+      id = Long.parseLong(action.substring(action.lastIndexOf("/") + 1));
+      action = "/project/getProject";
+    } else if (action != null && action.matches("/project/delete/\\d+")) {
+      id = Long.parseLong(action.substring(action.lastIndexOf("/") + 1));
+      action = "/project/delete";
     }
 
     if (action == null) {
@@ -114,6 +119,23 @@ public class ConexionServlet extends HttpServlet {
         break;
       case "/project/all":
         getAllProjects(request, response);
+        break;
+      case "/project/getProject":
+        if (id != null) {
+          getProjectById(request, response, id);
+        } else {
+          response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing ID for edit");
+        }
+        break;
+      case "/project/update":
+        updateProject(request, response);
+        break;
+      case "/project/delete":
+        if (id != null) {
+          deleteProject(request, response, id);
+        } else {
+          response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing ID for edit");
+        }
         break;
       case "/member/save":
         saveMiembrosEq(request, response);
@@ -174,7 +196,7 @@ public class ConexionServlet extends HttpServlet {
     response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");
 
-    int id = 0;
+    Long id = 0L;
     String nombre = request.getParameter("nombre");
     String descripcion = request.getParameter("descripcion");
     LocalDate fechaInicio = parseDate(request.getParameter("fechainicio"));
@@ -214,6 +236,90 @@ public class ConexionServlet extends HttpServlet {
     String json = gson.toJson(proyectos);
     response.setContentType("application/json");
     response.getWriter().write(json);
+  }
+
+  private void getProjectById(HttpServletRequest request, HttpServletResponse response, Long id)
+      throws ServletException, IOException {
+    DAOProyectos daoProyectos = new DAOProyectos(jdbcUrl, jdbcUsername, jdbcPassword);
+    Proyectos proyecto = daoProyectos.getProyectoById(id);
+
+    if (proyecto != null) {
+      response.setContentType("application/json");
+      response.setCharacterEncoding("UTF-8");
+
+      Gson gson = new GsonBuilder()
+          .registerTypeAdapter(LocalDate.class, new LocalDataAdapter())
+          .create();
+      String json = gson.toJson(proyecto);
+      response.getWriter().write(json);
+    } else {
+      response.sendError(HttpServletResponse.SC_NOT_FOUND);
+    }
+  }
+
+  public void updateProject(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+
+    String idParam = request.getParameter("id");
+    String nombre = request.getParameter("nombre");
+    String descripcion = request.getParameter("descripcion");
+    LocalDate fechaInicio = parseDate(request.getParameter("fechaInicio"));
+    LocalDate fechaFin = parseDate(request.getParameter("fechaFin"));
+    Estado status = Estado.COMPLETED;
+    String accion = request.getParameter("accion");
+
+    if (idParam == null || idParam.isEmpty()) {
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing parameters");
+      return;
+    }
+
+    Long id;
+    try {
+      id = Long.parseLong(idParam);
+    } catch (NumberFormatException e) {
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid ID format");
+      return;
+    }
+
+    Proyectos proyecto = new Proyectos(id,
+        nombre,
+        descripcion,
+        fechaInicio,
+        fechaFin,
+        status);
+    DAOProyectos daoProyectos = new DAOProyectos(jdbcUrl, jdbcUsername, jdbcPassword);
+    boolean isUpdate = daoProyectos.updateProyecto(proyecto);
+
+    if ("Actualizar".equalsIgnoreCase(accion)) {
+      if (isUpdate) {
+        response.getWriter().write("Proyecto actualizada con exito");
+      } else {
+        response.getWriter().write("Error al actualizar el proyecto");
+      }
+
+    }
+
+  }
+
+  public void deleteProject(HttpServletRequest request, HttpServletResponse response, Long id)
+      throws ServletException, IOException {
+    DAOProyectos daoProyectos = new DAOProyectos(jdbcUrl, jdbcUsername, jdbcPassword);
+    Proyectos proyectos = daoProyectos.getProyectoById(id);
+
+    if (proyectos != null) {
+      boolean isDelete = daoProyectos.deleteProyecto(id);
+      if (isDelete) {
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("Proyecto eliminado con exito");
+      } else {
+        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al eliminar el Proyecto");
+      }
+    } else {
+      response.sendError(HttpServletResponse.SC_NOT_FOUND);
+    }
+
   }
 
   /*

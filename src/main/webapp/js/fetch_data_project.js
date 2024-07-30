@@ -22,7 +22,7 @@ function populateTable(data) {
       <td class="py-3 px-6">${project.descripcion}</td>
       <td class="py-3 px-6">${project.fechaInicio}</td>
       <td class="py-3 px-6">${project.fechaFin}</td>
-      <td class="py-3 px-6">${project.estado}</td>
+      <td class="py-3 px-6">${project.status}</td>
       <td>
         <button type="button" class="bg-blue-500 text-white px-4 py-2 rounded-md shadow-sm" onclick="openEditModal(${project.id})">
           Editar
@@ -37,7 +37,7 @@ function populateTable(data) {
 }
 
 function openEditModal(id) {
-  fetch(`/taskProject-1.0-SNAPSHOT/conexion/project/get/${id}`)
+  fetch(`/taskProject-1.0-SNAPSHOT/conexion/project/getProject/${id}`)
     .then((response) => response.json())
     .then((project) => {
       document.getElementById("editProjectId").value = project.id;
@@ -77,9 +77,28 @@ function deleteProject(id) {
       if (data.success) {
         fetchProjects();
         closeDeleteModal();
+        showNotification("Proyecto eliminado exitosamente.");
       } else {
         alert("Error al eliminar proyecto");
       }
     })
     .catch((error) => console.error("Error deleting project:", error));
+}
+
+function showNotification(message, isError = false) {
+  const notificationContainer = document.getElementById(
+    "notificationContainer",
+  );
+  const notificationMessage = document.getElementById("notificationMessage");
+
+  notificationMessage.textContent = message;
+  notificationMessage.className = isError
+    ? "bg-red-500 text-white px-4 py-2 rounded-md shadow-sm"
+    : "bg-blue-500 text-white px-4 py-2 rounded-md shadow-sm";
+
+  notificationContainer.classList.remove("hidden");
+
+  setTimeout(() => {
+    notificationContainer.classList.add("hidden");
+  }, 3000);
 }

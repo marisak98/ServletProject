@@ -59,7 +59,7 @@ public class DAOProyectos {
       rsConsulta = stmt.executeQuery(querySelect);
       while (rsConsulta.next()) {
         proyecto = new Proyectos(
-            rsConsulta.getInt("id"),
+            rsConsulta.getLong("id"),
             rsConsulta.getString("nombre"),
             rsConsulta.getString("descripcion"),
             LocalDate.parse(rsConsulta.getString("fechaInicio")),
@@ -78,6 +78,73 @@ public class DAOProyectos {
       // ex.printStackTrace();
     }
     return proyectosLista;
+  }
+
+  public Proyectos getProyectoById(Long id) {
+    Proyectos proyecto = null;
+
+    String query = "SELECT * FROM proyectos WHERE id = " + id;
+
+    try {
+      connect.getConnection();
+
+      try (PreparedStatement pstmt = connect.getJdbcConnection().prepareStatement(query)) {
+        pstmt.setLong(1, id);
+        try (ResultSet rs = pstmt.executeQuery()) {
+          if (rs.next()) {
+            proyecto = new Proyectos(
+                rs.getLong("id"),
+                rs.getString("nombre"),
+                rs.getString("descripcion"),
+                rs.getDate("fechaInicio").toLocalDate(),
+                rs.getDate("fechaFin").toLocalDate(),
+                Estado.valueOf(rs.getString("estado")));
+          }
+        }
+      }
+    } catch (SQLException e) {
+      e.printStackTrace(); // Consider replacing with a logging framework
+    }
+    return proyecto;
+  }
+
+  public boolean updateProyecto(Proyectos proyecto) {
+    boolean status = false;
+    Connection connection;
+
+    String query = "UPDATE proyectos SET nombre = ?, descripcion = ?, fechaInicio = ?, fechaFin = ?,  estado = ? WHERE id = ?";
+    try {
+      connect.getConnection();
+      try (PreparedStatement pstmt = connect.getJdbcConnection().prepareStatement(query)) {
+        pstmt.setString(1, proyecto.getNombre());
+        pstmt.setString(2, proyecto.getDescripcion());
+        pstmt.setDate(3, Date.valueOf(proyecto.getFechaInicio()));
+        pstmt.setDate(4, Date.valueOf(proyecto.getFechaFin()));
+        pstmt.setString(5, proyecto.getStatus().name());
+        pstmt.setLong(6, proyecto.getId());
+
+        int rowsAffected = pstmt.executeUpdate();
+        return rowsAffected > 0;
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+    return status;
+  }
+
+  public boolean deleteProyecto(Long id) {
+    boolean status = false;
+
+    String query = "DELETE FROM proyectos WHERE id = " + id;
+
+    try (PreparedStatement pstmt = connect.getJdbcConnection().prepareStatement(query)) {
+      pstmt.setLong(1, id);
+      int rowsAffected = pstmt.executeUpdate();
+      return rowsAffected > 0;
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
+    return status;
   }
 
 }

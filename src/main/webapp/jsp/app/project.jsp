@@ -24,7 +24,7 @@
                       value="z"
                       class="border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-700 hover:text-white border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground"
                     >
-                    Nuevo Proyecto
+                    Agregar Tareas
                     </button>
                 <%@include file="./_components/create_new_project.jsp"  %>
 </div>

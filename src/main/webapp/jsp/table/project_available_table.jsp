@@ -30,7 +30,7 @@
       <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
         <h3 class="text-xl font-semibold mb-4">Editar Proyecto</h3>
         <form id="editProjectForm" action="/taskProject-1.0-SNAPSHOT/conexion/project/update" method="POST">
-          <input type="hidden" id="editProjectId" name="id">
+          <input type="text" id="editProjectId" name="id">
           <div class="mb-4">
             <label for="editProjectName" class="block text-sm font-medium text-gray-700">Nombre</label>
             <input type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm" id="editProjectName" name="nombre" required>
@@ -53,7 +53,7 @@
           </div>
           <div class="flex justify-end">
             <button type="button" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md shadow-sm mr-2" onclick="closeEditModal()">Cancelar</button>
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md shadow-sm">Guardar Cambios</button>
+            <button type="submit" name="accion"  value="Actualizar" class="bg-blue-500 text-white px-4 py-2 rounded-md shadow-sm">Guardar Cambios</button>
           </div>
         </form>
       </div>
