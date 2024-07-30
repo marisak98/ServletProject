@@ -5,23 +5,23 @@ package com.touhousoft.taskproject.model;
  */
 public class MiembroEquipo {
 
-  private int id;
+  private Long id;
   private String nombre;
   private String correo;
   private String rol;
 
-  public MiembroEquipo(int id, String nombre, String correo, String rol) {
+  public MiembroEquipo(Long id, String nombre, String correo, String rol) {
     this.id = id;
     this.nombre = nombre;
     this.correo = correo;
     this.rol = rol;
   }
 
-  public int getId() {
+  public Long getId() {
     return id;
   }
 
-  public void setId(int id) {
+  public void setId(Long id) {
     this.id = id;
   }
 

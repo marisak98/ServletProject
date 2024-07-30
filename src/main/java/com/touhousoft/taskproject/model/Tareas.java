@@ -37,6 +37,9 @@ public class Tareas {
     this.miembroEquipoId = miembroEquipoId;
   }
 
+  public Tareas() {
+  }
+
   public Long getId() {
     return id;
   }

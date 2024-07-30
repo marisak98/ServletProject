@@ -20,6 +20,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -69,9 +70,38 @@ public class ConexionServlet extends HttpServlet {
     processRequest(request, response);
   }
 
+  @Override
+  protected void doPut(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+    updateTask(request, response);
+  }
+
+  @Override
+  protected void doDelete(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+    processRequest(request, response);
+  }
+
   private void processRequest(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     String action = request.getPathInfo();
+    Long id = null;
+    int ids = 0;
+
+    // Verifica si la ruta es /task/getTarea/ID
+    if (action != null && action.matches("/task/getTarea/\\d+")) {
+      id = Long.parseLong(action.substring(action.lastIndexOf("/") + 1));
+      action = "/task/getTarea"; // Para manejar con el case del switch
+    } else if (action != null && action.matches("/task/delete/\\d+")) {
+      id = Long.parseLong(action.substring(action.lastIndexOf("/") + 1));
+      action = "/task/delete";
+    } else if (action != null && action.matches("/member/getMember/\\d+")) {
+      id = Long.parseLong(action.substring(action.lastIndexOf("/") + 1));
+      action = "/member/getMember";
+    } else if (action != null && action.matches("/member/delete/\\d+")) {
+      id = Long.parseLong(action.substring(action.lastIndexOf("/") + 1));
+      action = "/member/delete";
+    }
 
     if (action == null) {
       response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -88,15 +118,51 @@ public class ConexionServlet extends HttpServlet {
       case "/member/save":
         saveMiembrosEq(request, response);
         break;
+      case "/member/all":
+        getAllMembers(request, response);
+        break;
+      case "/member/update":
+        updateMiembrosEq(request, response);
+        break;
+      case "/member/getMember":
+        if (id != null) {
+          getMiembrosEquipoById(request, response, id);
+        } else {
+          response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing ID for edit");
+        }
+        break;
+      case "/member/delete":
+        if (id != null) {
+          deleteMiembrosEq(request, response, id);
+        } else {
+          response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing ID for edit");
+        }
+        break;
       case "/user/save":
         saveUser(request, response);
         break;
       case "/task/save":
         saveTask(request, response);
         break;
+      case "/task/update":
+        updateTask(request, response);
+        break;
       case "/task/all":
         getAllTasks(request, response);
         break;
+      case "/task/getTarea":
+        if (id != null) {
+          getTaskById(request, response, id);
+        } else {
+          response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing ID for edit");
+        }
+        break;
+      case "/task/delete":
+        if (id != null) {
+          deleteTask(request, response, id);
+        } else {
+          response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing ID for deleteTask");
+        }
       default:
         response.sendError(HttpServletResponse.SC_NOT_FOUND);
         break;
@@ -158,12 +224,12 @@ public class ConexionServlet extends HttpServlet {
 
   private void saveMiembrosEq(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    int id;
+    Long id;
     String nombre;
     String correo;
     String rol;
 
-    id = Integer.parseInt(request.getParameter("cedula"));
+    id = Long.parseLong(request.getParameter("cedula"));
     nombre = request.getParameter("nombre");
     correo = request.getParameter("correo");
     rol = request.getParameter("rol");
@@ -186,10 +252,96 @@ public class ConexionServlet extends HttpServlet {
       response.getWriter().write("Acción desconocida");
     }
 
-    request.setAttribute("messageConfirm", messageConfirm);
-    request.setAttribute("messageError", messageError);
-    RequestDispatcher dispatcher = request.getRequestDispatcher(miembrosInterfaz);
-    dispatcher.forward(request, response);
+  }
+
+  private void getAllMembers(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+    DAOMiembroEquipo daoEquipo = new DAOMiembroEquipo(jdbcUrl, jdbcUsername, jdbcPassword);
+    ArrayList<MiembroEquipo> membersList = daoEquipo.getMiembrosEquipo();
+    Gson gson = new Gson();
+    String json = gson.toJson(membersList);
+    response.setContentType("application/json");
+    response.getWriter().write(json);
+
+  }
+
+  private void getMiembrosEquipoById(HttpServletRequest request, HttpServletResponse response, Long id)
+      throws ServletException, IOException {
+    DAOMiembroEquipo daoEq = new DAOMiembroEquipo(jdbcUrl, jdbcUsername, jdbcPassword);
+    MiembroEquipo miembroEq = daoEq.getMiembroEquipoById(id);
+
+    if (miembroEq != null) {
+      Gson gson = new Gson();
+      String json = gson.toJson(miembroEq);
+      response.setContentType("application/json");
+      response.getWriter().write(json);
+    } else {
+      response.sendError(HttpServletResponse.SC_NOT_FOUND);
+    }
+  }
+
+  private void updateMiembrosEq(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+
+    String idParam = request.getParameter("EditId");
+    String nombre = request.getParameter("nombre");
+    String correo = request.getParameter("correo");
+    String rol = request.getParameter("rol");
+    String accion = request.getParameter("accion");
+
+    if (idParam == null || idParam.isEmpty()) {
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID is missing");
+      System.out.println(idParam);
+
+      return;
+    }
+    System.out.println(idParam);
+    if (idParam == null || nombre == null || correo == null || rol == null || accion == null) {
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing parameters");
+      return;
+    }
+
+    Long id;
+    try {
+      id = Long.parseLong(idParam);
+    } catch (NumberFormatException e) {
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid ID format");
+      return;
+    }
+
+    MiembroEquipo miembroEquipo = new MiembroEquipo(id, nombre, correo, rol);
+    DAOMiembroEquipo daoEq = new DAOMiembroEquipo(jdbcUrl, jdbcUsername, jdbcPassword);
+    boolean isUpdate = daoEq.updateMiembrosEquipo(miembroEquipo);
+
+    if ("ActualizarM".equalsIgnoreCase(accion)) {
+      if (isUpdate) {
+        response.getWriter().write("Miembro de equipo actualizado con exito");
+      } else {
+        response.getWriter().write("Error al actualizar el miembros de equipo");
+      }
+
+    }
+  }
+
+  public void deleteMiembrosEq(HttpServletRequest request, HttpServletResponse response, Long id)
+      throws ServletException, IOException {
+    DAOMiembroEquipo daoEq = new DAOMiembroEquipo(jdbcUrl, jdbcUsername, jdbcPassword);
+    MiembroEquipo miembrosEquipo = daoEq.getMiembroEquipoById(id);
+
+    if (miembrosEquipo != null) {
+      boolean isDelete = daoEq.deleteMiembrosEquipo(id);
+      if (isDelete) {
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("Miembros de equipo eliminado con exito");
+      } else {
+        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al eliminar el miembro de equipo");
+      }
+    } else {
+      response.sendError(HttpServletResponse.SC_NOT_FOUND);
+    }
+
   }
 
   /*
@@ -311,6 +463,103 @@ public class ConexionServlet extends HttpServlet {
     String json = gson.toJson(tareasList);
     response.setContentType("application/json");
     response.getWriter().write(json);
+  }
+
+  private void getTaskById(HttpServletRequest request, HttpServletResponse response, Long id)
+      throws ServletException, IOException {
+    DAOTareas daoTareas = new DAOTareas(jdbcUrl, jdbcUsername, jdbcPassword);
+    Tareas tarea = daoTareas.getTareaById(id);
+
+    if (tarea != null) {
+      response.setContentType("application/json");
+      response.setCharacterEncoding("UTF-8");
+
+      Gson gson = new GsonBuilder()
+          .registerTypeAdapter(LocalDate.class, new LocalDataAdapter())
+          .create();
+      String json = gson.toJson(tarea);
+      response.getWriter().write(json);
+    } else {
+      response.sendError(HttpServletResponse.SC_NOT_FOUND);
+    }
+  }
+
+  public void updateTask(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+
+    Long id = 0L;
+    String nombre = request.getParameter("taskName");
+    String descripcion = request.getParameter("taskName");
+    LocalDate fechaInicio = parseDate(request.getParameter("taskStartDate"));
+    LocalDate fechaFin = parseDate(request.getParameter("taskEndDate"));
+    String prioridad = request.getParameter("taskPriority");
+    String status = request.getParameter("taskStatus");
+    String proyectoIdStr = request.getParameter("projectId");
+    String miembroIdStr = request.getParameter("memberId");
+    String accion = request.getParameter("accion");
+
+    Long proyectoId = null;
+    if (proyectoIdStr != null && !proyectoIdStr.isEmpty()) {
+      try {
+        proyectoId = Long.valueOf(proyectoIdStr);
+      } catch (NumberFormatException e) {
+        response.getWriter().write("Cedula inválida");
+        return;
+      }
+
+    }
+
+    Long miembrosId = null;
+    if (miembroIdStr != null && !miembroIdStr.isEmpty()) {
+      try {
+        miembrosId = Long.valueOf(miembroIdStr);
+      } catch (NumberFormatException e) {
+        response.getWriter().write("Cedula inválida");
+        return;
+      }
+    }
+
+    Tareas tareas = new Tareas(id,
+        nombre,
+        descripcion,
+        fechaInicio,
+        fechaFin,
+        prioridad,
+        status,
+        proyectoId,
+        miembrosId);
+    DAOTareas daoTareas = new DAOTareas(jdbcUrl, jdbcUsername, jdbcPassword);
+    boolean isUpdate = daoTareas.updateTare(tareas);
+
+    if ("Actualizar".equalsIgnoreCase(accion)) {
+      if (isUpdate) {
+        response.getWriter().write("Tarea actualizada con exito");
+      } else {
+        response.getWriter().write("Error al actualizar la tarea");
+      }
+
+    }
+
+  }
+
+  public void deleteTask(HttpServletRequest request, HttpServletResponse response, Long id)
+      throws ServletException, IOException {
+    DAOTareas daoTareas = new DAOTareas(jdbcUrl, jdbcUsername, jdbcPassword);
+    Tareas tareas = daoTareas.getTareaById(id);
+
+    if (tareas != null) {
+      boolean isDeleted = daoTareas.deleteTarea(id);
+      if (isDeleted) {
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"message\":\"Tarea eliminada con éxito\"}");
+      } else {
+        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error al eliminar la tarea");
+      }
+    } else {
+      response.sendError(HttpServletResponse.SC_NOT_FOUND, "Tarea no encontrada");
+    }
   }
 
 }
