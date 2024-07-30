@@ -59,4 +59,9 @@ public class MainServlet extends HttpServlet {
       response.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
   }
+
+  protected void doPost(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+    doGet(request, response);
+  }
 }

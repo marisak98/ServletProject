@@ -28,8 +28,9 @@ public class LoginServlet extends HttpServlet {
       throws ServletException, IOException {
     String user = request.getParameter("email");
     String password = request.getParameter("password");
+    Long idMiembro = null;
 
-    usuario users = new usuario(user, password);
+    usuario users = new usuario(user, password, idMiembro);
 
     if (userService.isValid(users)) {
       request.getSession().setAttribute("usuario", users);
